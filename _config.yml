@@ -1,0 +1,26 @@
+title: Stellar labels from spectra with The Cannon
+author: Vasily Belokurov
+copyright: "2026"
+only_build_toc_files: true
+exclude_patterns: [_build, .pytest_cache, "**/.pytest_cache", README.md, AGENTS.md, STRUCTURE.md, data, data_build]
+
+execute:
+  execute_notebooks: 'off'     # notebooks are executed (and checked) by pytest --nbmake --overwrite in CI
+  timeout: 1200
+
+repository:
+  url: https://github.com/vasilybelokurov/the-cannon-tutorial
+  branch: main
+
+launch_buttons:
+  colab_url: https://colab.research.google.com
+  notebook_interface: classic
+
+html:
+  use_repository_button: true
+  use_issues_button: true
+
+sphinx:
+  config:
+    html_show_copyright: false
+    myst_links_external_new_tab: true

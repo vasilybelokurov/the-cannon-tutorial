@@ -1,0 +1,52 @@
+# Tests every notebook in a fresh kernel, builds the Jupyter Book (executing all notebooks),
+# and deploys it to GitHub Pages on pushes to main.
+name: Test and build book
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: pip install -r requirements.txt "jupyter-book==1.0.4.post1" pytest nbmake pytest-xdist
+      - name: Cache the data files (GitHub release data-v0.1)
+        uses: actions/cache@v4
+        with:
+          path: notebooks/data
+          key: data-${{ hashFiles('data/MANIFEST.json') }}   # a new or rebuilt file changes the manifest, hence the key
+      - name: Tests and notebooks
+        run: pytest -q -n 2 tests/ --nbmake notebooks/ --nbmake-timeout=2400 --overwrite   # two at a time; executed notebooks are kept for the book
+      - name: Build book
+        run: jupyter-book build . -W -n --keep-going
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _build/html
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

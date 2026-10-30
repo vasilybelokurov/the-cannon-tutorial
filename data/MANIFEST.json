@@ -1,0 +1,106 @@
+{
+ "continuum_pixels": {
+  "rows": 8575,
+  "bytes": 103995,
+  "sha256": "91c961c4505f5b74fda3be10e4d6bb9f0e440f5844a76630deb0d36259bb2945",
+  "created_utc": "2026-10-30T15:11:32+00:00",
+  "queries": [
+   "notebooks/03_continuum.ipynb, sect. 3.3 (N15 criteria on a model trained on quantile-normalised spectra_train)"
+  ]
+ },
+ "labels": {
+  "rows": 4638,
+  "bytes": 1341372,
+  "sha256": "5d387720e9949de32cdb66d73a443e562bc28b96fdab6f060b8ad43cdc6dfa22",
+  "created_utc": "2026-10-30T14:56:27+00:00",
+  "queries": [
+   "WITH g AS (SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag, row_number() OVER (PARTITION BY floor(teff / 100), floor(logg / 0.25), floor(fe_h / 0.25) ORDER BY md5(apogee_id || field)) AS rk FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.5 AND 0.4 AND (snr > 200 OR (fe_h < -1 AND snr > 100)) AND c_fe <> 'NaN'::real AND c_fe_flag = 0 AND n_fe <> 'NaN'::real AND n_fe_flag = 0 AND mg_fe <> 'NaN'::real AND mg_fe_flag = 0) SELECT * FROM g WHERE rk <= 4",
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.5 AND 0.4 AND snr BETWEEN 50 AND 100 ORDER BY md5(apogee_id || field) LIMIT 1500",
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -2.5 AND -1.5 AND snr > 100 ORDER BY md5(apogee_id || field) LIMIT 300",
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 4000 AND 6000 AND logg > 4.0 AND snr > 100 ORDER BY md5(apogee_id || field) LIMIT 200",
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.0 AND 0.4 AND snr BETWEEN 100 AND 200 AND nvisits BETWEEN 4 AND 12 ORDER BY md5(apogee_id || field) LIMIT 200",
+   "SELECT DISTINCT ON (apogee_id) apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND member IN ('M67','N6819','N188','N7789','N2420','N6791','N2158', 'M3','M5','M13','M71','M107','M92','M15','M53','M2','M12') AND snr > 70 ORDER BY apogee_id, snr DESC"
+  ]
+ },
+ "labels_rvs": {
+  "rows": 4000,
+  "bytes": 1170982,
+  "sha256": "dc60c0b9ab40e819356a7dc087f809007dcbb2c0c7b947fe12d5712a5882c0f0",
+  "created_utc": "2026-10-30T14:34:56+00:00",
+  "queries": [
+   "WITH a AS MATERIALIZED (SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -2.0 AND 0.4 AND snr > 100 AND gaiaedr3_source_id > 0), r AS MATERIALIZED (SELECT a.*, r.flux AS rvs_flux, r.flux_error AS rvs_flux_error, r.combined_transits FROM a JOIN gaia_dr3.rvs_mean_spectrum r ON r.source_id = a.gaiaedr3_source_id ORDER BY md5(apogee_id || field) LIMIT 4000) SELECT r.*, g.rvs_spec_sig_to_noise, p.teff_gspspec, p.logg_gspspec, p.mh_gspspec, p.alphafe_gspspec, p.flags_gspspec FROM r JOIN gaia_dr3.gaia_source g ON g.source_id = r.gaiaedr3_source_id LEFT JOIN gaia_dr3.astrophysical_parameters p ON p.source_id = r.gaiaedr3_source_id"
+  ]
+ },
+ "linelist": {
+  "rows": 1651,
+  "bytes": 56378,
+  "sha256": "010f36cb796108655c6cf56fa263fbc2f6a8c937f447a3844ae5bb7b34511511",
+  "created_utc": "2026-10-30T14:35:12+00:00",
+  "queries": [
+   "https://data.sdss.org/sas/dr17/apogee/spectro/speclib/linelists/turbospec/turbospec.20180901t20.atoms and .molec (strength = log eps + loggf - 1.12 chi; 40 strongest per atomic species, 60 per molecule; vacuum wavelengths by Morton 2000)"
+  ]
+ },
+ "rvs_apogee": {
+  "rows": 4000,
+  "bytes": 65018426,
+  "sha256": "ce3fbd08aff0844b44c1b5a06201902170631fed753740bb588543d36588b947",
+  "created_utc": "2026-10-30T14:34:56+00:00",
+  "queries": [
+   "WITH a AS MATERIALIZED (SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -2.0 AND 0.4 AND snr > 100 AND gaiaedr3_source_id > 0), r AS MATERIALIZED (SELECT a.*, r.flux AS rvs_flux, r.flux_error AS rvs_flux_error, r.combined_transits FROM a JOIN gaia_dr3.rvs_mean_spectrum r ON r.source_id = a.gaiaedr3_source_id ORDER BY md5(apogee_id || field) LIMIT 4000) SELECT r.*, g.rvs_spec_sig_to_noise, p.teff_gspspec, p.logg_gspspec, p.mh_gspspec, p.alphafe_gspspec, p.flags_gspspec FROM r JOIN gaia_dr3.gaia_source g ON g.source_id = r.gaiaedr3_source_id LEFT JOIN gaia_dr3.astrophysical_parameters p ON p.source_id = r.gaiaedr3_source_id"
+  ]
+ },
+ "spectra_clusters": {
+  "rows": 735,
+  "bytes": 27372541,
+  "sha256": "e6e50755c937a87b2984577faada816b467f6da6a07ee2b5d6a4b481cced6f36",
+  "created_utc": "2026-10-30T14:56:27+00:00",
+  "queries": [
+   "SELECT DISTINCT ON (apogee_id) apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND member IN ('M67','N6819','N188','N7789','N2420','N6791','N2158', 'M3','M5','M13','M71','M107','M92','M15','M53','M2','M12') AND snr > 70 ORDER BY apogee_id, snr DESC"
+  ]
+ },
+ "spectra_dwarfs": {
+  "rows": 200,
+  "bytes": 7557733,
+  "sha256": "7a838cfd35dadb60f3b58329b6ca369c259c99d7b99e14bbbc79f0df757dd14e",
+  "created_utc": "2026-10-30T14:48:25+00:00",
+  "queries": [
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 4000 AND 6000 AND logg > 4.0 AND snr > 100 ORDER BY md5(apogee_id || field) LIMIT 200"
+  ]
+ },
+ "spectra_metalpoor": {
+  "rows": 300,
+  "bytes": 11103766,
+  "sha256": "a9758d18889f71ee0443063314d3e7e8c1432c2e1485318eb13219be5239b094",
+  "created_utc": "2026-10-30T14:47:49+00:00",
+  "queries": [
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -2.5 AND -1.5 AND snr > 100 ORDER BY md5(apogee_id || field) LIMIT 300"
+  ]
+ },
+ "spectra_test": {
+  "rows": 1500,
+  "bytes": 56978255,
+  "sha256": "f89ff4fbe61eb77fc296ed3ba9ed8608208bd2b772b13e25e01dd1ee4026437b",
+  "created_utc": "2026-10-30T14:47:01+00:00",
+  "queries": [
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.5 AND 0.4 AND snr BETWEEN 50 AND 100 ORDER BY md5(apogee_id || field) LIMIT 1500"
+  ]
+ },
+ "spectra_train": {
+  "rows": 1703,
+  "bytes": 63821225,
+  "sha256": "d739fb4a11759225200b631c4c7e93689a572bbe90267ef6eb1028efd6e7b7c5",
+  "created_utc": "2026-10-30T14:42:50+00:00",
+  "queries": [
+   "WITH g AS (SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag, row_number() OVER (PARTITION BY floor(teff / 100), floor(logg / 0.25), floor(fe_h / 0.25) ORDER BY md5(apogee_id || field)) AS rk FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.5 AND 0.4 AND (snr > 200 OR (fe_h < -1 AND snr > 100)) AND c_fe <> 'NaN'::real AND c_fe_flag = 0 AND n_fe <> 'NaN'::real AND n_fe_flag = 0 AND mg_fe <> 'NaN'::real AND mg_fe_flag = 0) SELECT * FROM g WHERE rk <= 4"
+  ]
+ },
+ "spectra_visits": {
+  "rows": 200,
+  "bytes": 49210517,
+  "sha256": "6cc092a3614b891d0cbf861062f5181e949a048930d3a3f932460713316398df",
+  "created_utc": "2026-10-30T14:49:59+00:00",
+  "queries": [
+   "SELECT apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr, nvisits, vhelio_avg, vscatter, starflag, aspcapflag, extratarg, memberflag, member, meanfib, teff, teff_err, logg, logg_err, m_h, m_h_err, alpha_m, alpha_m_err, fe_h, fe_h_err, vmicro, vmacro, vsini, teff_spec, logg_spec, aspcap_chi2, c_fe, c_fe_err, c_fe_flag, n_fe, n_fe_err, n_fe_flag, o_fe, o_fe_err, o_fe_flag, mg_fe, mg_fe_err, mg_fe_flag, al_fe, al_fe_err, al_fe_flag, si_fe, si_fe_err, si_fe_flag, ca_fe, ca_fe_err, ca_fe_flag, mn_fe, mn_fe_err, mn_fe_flag, ni_fe, ni_fe_err, ni_fe_flag, gaiaedr3_source_id, gaiaedr3_parallax, gaiaedr3_parallax_error, gaiaedr3_phot_g_mean_mag, gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag FROM apogee_dr17.allstar WHERE telescope = 'apo25m' AND (aspcapflag & (1::bigint << 23)) = 0 AND (starflag & 14877209) = 0 AND vscatter < 1 AND teff > 0 AND logg > -1 AND fe_h > -9 AND fe_h <> 'NaN'::real AND extratarg = 0 AND memberflag = 0 AND teff BETWEEN 3800 AND 5300 AND logg BETWEEN 0.8 AND 3.6 AND fe_h BETWEEN -1.0 AND 0.4 AND snr BETWEEN 100 AND 200 AND nvisits BETWEEN 4 AND 12 ORDER BY md5(apogee_id || field) LIMIT 200"
+  ]
+ }
+}

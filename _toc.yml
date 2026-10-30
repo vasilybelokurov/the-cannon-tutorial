@@ -1,0 +1,13 @@
+format: jb-book
+root: intro
+chapters:
+  - file: notebooks/00_apogee_spectra
+  - file: notebooks/01_spectra_and_labels
+  - file: notebooks/02_cannon_toy
+  - file: notebooks/03_continuum
+  - file: notebooks/04_cannon_apogee
+  - file: notebooks/05_validation
+  - file: notebooks/06_repeat_visits
+  - file: notebooks/07_clusters
+  - file: notebooks/08_abundances
+  - file: notebooks/09_gaia_rvs

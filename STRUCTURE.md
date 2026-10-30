@@ -1,0 +1,146 @@
+# STRUCTURE.md
+
+Plan of the tutorial **Stellar labels from spectra with The Cannon**. Audience: students (beginner upwards)
+who know basic Python/numpy and what a stellar spectrum is. Exit level: writing, training, validating and
+stress-testing a data-driven spectral model, The Cannon (Ness et al. 2015), on real APOGEE spectra, and
+transferring its labels to another survey.
+
+This plan was reviewed independently by Claude Fable and by Codex (OpenAI) on 2026-10-30. Their main
+recommendations are adopted: cluster members are never trained on; the training set is stratified in label
+space; flagged pixels get inflated errors instead of being dropped; the toy model comes before continuum
+normalisation; the "same LSF" claim is replaced by a fibre diagnostic; repeat-visit precision is measured from
+visit-to-visit scatter (a visit and the combination containing it are correlated); asserts test behaviour with
+tolerances frozen after a development run, not hoped-for outcomes; the abundance chapter tests whether a label
+is *measured* or *predicted from correlations* by censoring its lines; the Gaia chapter is an adaptation of the
+label-transfer idea of Ho et al. 2017 (who used LAMOST), compared with Gaia's own GSP-Spec labels.
+
+## Principles
+
+1. **From the pixels up.** Students start from the APOGEE `apStar` spectra (reduced, resampled, rest-frame
+   flux with errors and a pixel bitmask), not from pipeline-normalised spectra, and write The Cannon
+   themselves in numpy. No `thecannon` package as a black box.
+2. **Toy before real.** The model is first fitted to synthetic spectra drawn from a known quadratic model, where
+   the right answer is known.
+3. **Follow the papers.** Each chapter rebuilds a figure or test of Ness et al. 2015 (N15), Casey et al. 2016
+   (C16), Ness et al. 2016 (N16), Ho et al. 2017 (H17) or Ness et al. 2018 (N18) with DR17 data; differences are
+   stated with their size and cause.
+4. **Label scale is inherited.** The reference labels are the DR17 ASPCAP calibrated `TEFF`, `LOGG`, `FE_H`
+   (and `MG_FE`, `C_FE`, `N_FE`). Agreement with ASPCAP measures *precision on the ASPCAP scale*, not accuracy.
+   Independent checks are repeat visits, star clusters, and another survey (Gaia RVS).
+5. **Validate honestly.** k-fold cross-validation, real single-visit spectra, clusters, extrapolation outside
+   the training set, and a censoring test, not only a one-to-one plot of the training set.
+6. **Public data as pre-extracted snippets**, as in the sibling tutorials: `scripts/build_data.py` queries WSDB
+   (`apogee_dr17.allstar`, `gaia_dr3.rvs_mean_spectrum`, `gaia_dr3.astrophysical_parameters`) and the SDSS SAS
+   (`apStar` files, line lists) and writes small files plus `data/MANIFEST.json` (query, rows, SHA-256);
+   notebooks download them from the GitHub release `data-v0.1` and check the checksum.
+7. **Plot + assertion.** Every claim comes with a figure and an `assert` with a tolerance. Tolerances are
+   starting budgets, frozen after a development run.
+8. **Least code that works.** Each notebook is self-contained (runs alone in Colab); the small helpers (loader,
+   normalisation, train, test) are repeated rather than hidden in a package.
+
+## Chapters (v0.1) — built 2026-10-30
+
+Asserts as implemented; measured values in brackets. Tolerances were frozen after a development run; where a
+first guess failed, the test was changed to what the data showed and the text says so.
+
+| Ch | Notebook | Learning objective | Data | Assert (tolerance) [measured] |
+|---|---|---|---|---|
+| 00 | `00_apogee_spectra` | APOGEE `apStar` spectra: log-linear vacuum grid, three detectors, flux, error, `APOGEE_PIXMASK`; S/N; flagged pixels get zero weight; storage precision; samples and Kiel diagrams | `labels`, `spectra_train` | grid 15 100.80–16 999.8 Å, 3 detectors; catalogue SNR = median flux/err (< 0.1%) [exact]; flux stored as float32 (rounding < 1e-3 σ) and float16 would not be safe (99.9th pct > 0.5σ) [0.75σ] |
+| 01 | `01_spectra_and_labels` | Line list (atoms, CN, CO, OH; air → vacuum); spectra ordered by one label; flux of one pixel vs labels, linear vs quadratic; coefficients pixel by pixel | `spectra_train`, `linelist` | vacuum − air 4.0–4.6 Å [4.37]; Fe I core ∂f/∂[Fe/H] < 0 at > 5σ [−0.159 ± 0.005]; quadratic rms < linear [0.015 vs 0.021] |
+| 02 | `02_cannon_toy` | The Cannon on synthetic spectra: scaling, training step (WLS + ML scatter, why ln V matters), test step, formal errors, pulls, regression dilution | synthetic | model pulls std 1 ± 0.1, ≥ 99% within 3σ [1.005]; s recovered ±10% where s = σ, < 0.3σ where s = 0; label pulls 1 ± 0.1 [0.99–1.03]; dilution slope = 1 + (σ_noise/σ_label)² within 0.03 |
+| 03 | `03_continuum` | Running-quantile pseudo-continuum and its S/N bias; continuum pixels from a first model (N15 §5.3); Chebyshev per detector; S/N test | `spectra_train`, `linelist`, `continuum_pixels` | continuum pixels avoid lines (< ½ the line proximity of average pixels) [0.08 vs 0.21]; shipped list identical; quantile bias at S/N 30 > 3× continuum-pixel bias [2.3% vs < 1e-4] |
+| 04 | `04_cannon_apogee` | Training on 1363 giants; cleaning the training set (χ²/ν ≥ 3 removed); coefficients vs line list (N15 Fig. 5); held-out χ²; flagged pixels; fibre (LSF) residuals | `spectra_train`, `linelist` | Fe I cores ∂f/∂[Fe/H] < 0 for ≥ 90% [100%]; held-out median χ²/ν in 0.7–1.1 [0.82] and noise-only > 1.5× [8.0]; sky-line outliers > 3× clean [5×]; fibre–residual Spearman ρ > 0.2, p < 1e-6 [0.41] |
+| 05 | `05_validation` | 10-fold CV; formal vs empirical errors; precision vs [Fe/H]; linear vs quadratic (paired bootstrap); extrapolation to metal-poor giants and dwarfs; χ² and N15's EFLAG | `spectra_train`, `spectra_metalpoor`, `spectra_dwarfs` | CV rms below N15 Fig. 4 (96 K, 0.24, 0.08) [72 K, 0.19, 0.061]; formal/rms < 0.5 [0.05–0.07]; quadratic better (95% CI > 0) for T_eff, log g; metal-poor bias > 3σ [+0.60 dex at [Fe/H] < −2]; dwarf log g off > 0.3 dex; EFLAG dwarfs > 5× giants [0.60 vs 0.05]; flags miss many (either < 75% dwarfs [72%], < 50% metal-poor [36%]) |
+| 06 | `06_repeat_visits` | Visit-to-visit precision (no reference labels); formal errors; bias of single visits; quantile vs continuum pixels | `spectra_visits` | visit scatter > formal error in every S/N bin and > 2× at the highest; visit scatter flatter with S/N than formal [floor ≈ 35 K, 0.06, 0.027 dex]; quantile [Fe/H] bias at S/N < 60 larger than continuum-pixel bias [+0.058 vs +0.002] |
+| 07 | `07_clusters` | 17 open and globular clusters (never trained on): Kiel diagrams, cluster means across clusters, spreads | `spectra_clusters` | slope Cannon vs ASPCAP cluster means 0.9–1.1 inside the training range [0.98]; open-cluster median std < 0.05 and < 1.5× ASPCAP [0.036 vs 0.034] |
+| 08 | `08_abundances` | Six labels (+[Mg/Fe], [C/Fe], [N/Fe]); derivatives at Mg I, CO, CN lines; α sequences at S/N 50–100; measured or predicted (censoring, random-pixel control, prediction from the other labels) | `spectra_train`, `spectra_test`, `linelist` | rms/spread < 0.6, 0.7, 0.9 for Mg, C, N [0.49, 0.57, 0.80]; six labels improve T_eff, log g over three [53 K vs 72 K]; own-line derivative > 2× average [6.5, 2.7, 4.8]; same α sequence as ASPCAP > 80% [88%], sequence means within 0.03; Mg censoring > +10% [+16%], random censoring < +3% [0%]; prediction from other labels within 10% of the six-label rms [0.062 vs 0.063] |
+| 09 | `09_gaia_rvs` | Label transfer APOGEE → Gaia DR3 RVS (H17 idea); Gaia normalisation unstable at low S/N; renormalisation on continuum pixels; comparison with GSP-Spec | `rvs_apogee`, `labels_rvs` | continuum-offset scatter at S/N 20–30 > 5× that at S/N > 70 [10×] and ρ(offset, Δ[Fe/H]) < −0.5 [−0.66]; renormalisation improves log g, [Fe/H] at S/N < 30 by > 30% and removes > 70% of the [Fe/H] outliers [242 → 20]; Cannon rms < GSP-Spec rms for T_eff, log g, [Fe/H] [82 K vs 166 K; 0.22 vs 0.38; 0.12 vs 0.24] |
+
+Findings that changed the plan during the build: float16 flux storage was unsafe (Ch 0 test failed; files rebuilt
+with float32 flux); one scatter per pixel is inflated by ~3% outlier training stars (Ch 4 cleaning step); repeat-visit
+precision has a floor well above the formal errors (Ch 6); a six-label [Mg/Fe] is no better than a prediction from the
+other labels (Ch 8); Gaia's RVS normalisation is S/N dependent and produces a spurious metal-poor branch among faint
+stars (Ch 9); χ² alone flags only a minority of extrapolated stars (Ch 5).
+
+## Later chapters (v0.2)
+
+| Ch | Title | Data | Check |
+|---|---|---|---|
+| 10 | Masses and ages of red giants (N16: 0.07 dex in mass, 0.21 dex in age from 1639 APOKASC stars; CN features) | APOKASC-3 (Pinsonneault+25) × DR17 | CV rms log M |
+| 11 | A regularised Cannon with 15+ abundances (C16: L1 penalty, sparsity, cross-terms) | DR17 | sparsity vs validation precision |
+| 12 | Chemical doppelgängers (N18: ~0.3% of field pairs, ~1% at [Fe/H] = 0 ± 0.02, are indistinguishable) | DR17 clusters, field | pair χ² distribution of cluster vs field pairs |
+| 13 | Bootstrap model uncertainty and coverage (N15 Fig. 11) | DR17 | bootstrap vs formal errors in sparse regions |
+
+## Data (v0.1)
+
+Spectra: DR17 `apStar` files, APO 2.5 m only (one instrument; the line-spread function still varies from fibre to
+fibre, and `meanfib` is kept for that diagnostic). Row 0 of HDUs 1–3 (combined flux, error, `APOGEE_PIXMASK`);
+for `spectra_visits` also the single-visit rows. Stored as `.npz`: flux and error divided by the median flux of
+each spectrum (flux float32, error float16; Chapter 0 shows why the flux cannot be float16), the bitmask as
+int32, the median as float32. Pixels without data are NaN.
+
+Quality cuts (all samples): `telescope = apo25m`; ASPCAP `STAR_BAD` not set; `STARFLAG` without BAD_PIXELS,
+VERY_BRIGHT_NEIGHBOR, LOW_SNR, PERSIST_HIGH, SUSPECT_RV_COMBINATION, SUSPECT_BROAD_LINES, MULTIPLE_SUSPECT,
+RV_FAIL, SUSPECT_ROTATION; `vscatter < 1 km/s`. Field samples: `extratarg = 0` (one row per star) and
+`memberflag = 0`. Giants: 3800 < T_eff < 5300 K, 0.8 < log g < 3.6.
+
+| File | Content |
+|---|---|
+| `labels` | allStar rows (labels, errors, flags, SNR, `meanfib`, `member`, Gaia IDs) of every star in the spectra files, with its `sample` |
+| `spectra_train` | 1703 giants, −1.5 < [Fe/H] < 0.4, SNR > 200 (> 100 at [Fe/H] < −1), [C/Fe], [N/Fe], [Mg/Fe] unflagged; at most 4 stars per (100 K, 0.25 dex, 0.25 dex) cell |
+| `spectra_test` | 1500 giants, same label range, 50 < SNR < 100 |
+| `spectra_metalpoor` | 300 giants, −2.5 < [Fe/H] < −1.5, SNR > 100 |
+| `spectra_dwarfs` | 200 dwarfs, 4000 < T_eff < 6000 K, log g > 4, SNR > 100 |
+| `spectra_visits` | 200 giants (1285 spectra), −1 < [Fe/H] < 0.4, 100 < SNR < 200, 4–12 visits: combined and single-visit spectra, per-visit S/N |
+| `spectra_clusters` | 735 giant members (`member`) of 17 open and globular clusters, SNR > 70, best row per star |
+| `rvs_apogee`, `labels_rvs` | Gaia DR3 RVS mean spectra (flux, error) of 4000 APOGEE giants, their labels and Gaia GSP-Spec parameters |
+| `continuum_pixels` | the 704 continuum pixels of Chapter 3 (made by running that chapter's cells) |
+| `linelist` | strongest lines in the APOGEE window from the DR17 Turbospectrum lists (Smith et al. 2021): 40 per atomic species (I, II), 60 each of ¹²C¹⁴N, ¹²C¹⁶O, OH; vacuum wavelengths |
+
+## Repository layout
+
+```
+notebooks/      NN_<slug>.ipynb, committed without outputs, each runs standalone in Colab
+scripts/        build_data.py (WSDB + SDSS SAS → data files + manifest; instructor only)
+data/           README.md (licences, columns) and MANIFEST.json; data files are release assets
+tests/          pytest tests
+_config.yml, _toc.yml, intro.md   Jupyter Book
+_static/custom.css                page layout as in the sibling tutorials
+.github/workflows/book.yml        tests, executes notebooks, publishes to GitHub Pages
+```
+
+## Testing
+
+- `pytest tests/ --nbmake notebooks/` executes every notebook in a fresh kernel; notebooks contain explicit
+  `assert` cells. `jupyter-book build . -W -n --keep-going` builds the site. Both run in CI; fixed random seeds.
+
+## Literature (checked in ADS)
+
+The Cannon and its applications: Ness+15 https://ui.adsabs.harvard.edu/abs/2015ApJ...808...16N ·
+Casey+16 https://ui.adsabs.harvard.edu/abs/2016arXiv160303040C · Ness+16 https://ui.adsabs.harvard.edu/abs/2016ApJ...823..114N ·
+Ho+17a (label transfer to LAMOST) https://ui.adsabs.harvard.edu/abs/2017ApJ...836....5H ·
+Ho+17b (LAMOST masses) https://ui.adsabs.harvard.edu/abs/2017ApJ...841...40H ·
+Hogg+16 (chemical tagging) https://ui.adsabs.harvard.edu/abs/2016ApJ...833..262H ·
+Ness+18 (doppelgängers) https://ui.adsabs.harvard.edu/abs/2018ApJ...853..198N ·
+Ness+19 https://ui.adsabs.harvard.edu/abs/2019ApJ...883..177N · Wheeler+20 https://ui.adsabs.harvard.edu/abs/2020ApJ...898...58W ·
+Ness+22 https://ui.adsabs.harvard.edu/abs/2022ApJ...926..144N · Rix+16 (polynomial spectral models) https://ui.adsabs.harvard.edu/abs/2016ApJ...826L..25R ·
+Martig+16 ([C/N] masses) https://ui.adsabs.harvard.edu/abs/2016MNRAS.456.3655M ·
+Das+25 (The Cannon on Gaia RVS) https://ui.adsabs.harvard.edu/abs/2025MNRAS.538..605D
+
+Other data-driven and model-driven methods: Ting+19 (The Payne) https://ui.adsabs.harvard.edu/abs/2019ApJ...879...69T ·
+Leung & Bovy 19 (astroNN) https://ui.adsabs.harvard.edu/abs/2019MNRAS.483.3255L
+
+APOGEE: Majewski+17 https://ui.adsabs.harvard.edu/abs/2017AJ....154...94M ·
+Nidever+15 (reduction) https://ui.adsabs.harvard.edu/abs/2015AJ....150..173N ·
+García Pérez+16 (ASPCAP) https://ui.adsabs.harvard.edu/abs/2016AJ....151..144G ·
+Jönsson+20 (DR16) https://ui.adsabs.harvard.edu/abs/2020AJ....160..120J ·
+Abdurro'uf+22 (DR17) https://ui.adsabs.harvard.edu/abs/2022ApJS..259...35A ·
+Zasowski+13 (targeting) https://ui.adsabs.harvard.edu/abs/2013AJ....146...81Z ·
+Pinsonneault+18 (APOKASC-2) https://ui.adsabs.harvard.edu/abs/2018ApJS..239...32P ·
+Pinsonneault+25 (APOKASC-3) https://ui.adsabs.harvard.edu/abs/2025ApJS..276...69P
+
+## Open items
+
+- APOKASC-3 (VizieR J/ApJS/276/69) was not reachable on 2026-10-30 (CDS down); Chapter 10 waits for it.
+- Smith et al. 2021 (DR16/17 line list) https://ui.adsabs.harvard.edu/abs/2021AJ....161..254S · Asplund et al. 2009 https://ui.adsabs.harvard.edu/abs/2009ARA&A..47..481A · Morton 2000 https://ui.adsabs.harvard.edu/abs/2000ApJS..130..403M · Recio-Blanco et al. 2023 (GSP-Spec) https://ui.adsabs.harvard.edu/abs/2023A&A...674A..29R: checked in ADS.
+- The second, positive-offset group of faint-star RVS spectra (Ch 9): origin in the Gaia processing not traced.
