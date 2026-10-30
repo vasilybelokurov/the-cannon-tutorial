@@ -27,7 +27,7 @@ jobs:
           python-version: '3.13'
       - name: Install dependencies
         run: pip install -r requirements.txt "jupyter-book==1.0.4.post1" pytest nbmake pytest-xdist
-      - name: Cache the data files (GitHub release data-v0.1)
+      - name: Cache the data files (Zenodo record 23813051)
         uses: actions/cache@v4
         with:
           path: notebooks/data

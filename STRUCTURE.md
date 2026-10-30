@@ -32,7 +32,8 @@ label-transfer idea of Ho et al. 2017 (who used LAMOST), compared with Gaia's ow
 6. **Public data as pre-extracted snippets**, as in the sibling tutorials: `scripts/build_data.py` queries WSDB
    (`apogee_dr17.allstar`, `gaia_dr3.rvs_mean_spectrum`, `gaia_dr3.astrophysical_parameters`) and the SDSS SAS
    (`apStar` files, line lists) and writes small files plus `data/MANIFEST.json` (query, rows, SHA-256);
-   notebooks download them from the GitHub release `data-v0.1` and check the checksum.
+   notebooks download them from Zenodo (https://doi.org/10.5281/zenodo.23813051, made with
+   `scripts/zenodo_upload.py`) and check the checksum.
 7. **Plot + assertion.** Every claim comes with a figure and an `assert` with a tolerance. Tolerances are
    starting budgets, frozen after a development run.
 8. **Least code that works.** Each notebook is self-contained (runs alone in Colab); the small helpers (loader,
@@ -101,8 +102,8 @@ RV_FAIL, SUSPECT_ROTATION; `vscatter < 1 km/s`. Field samples: `extratarg = 0` (
 
 ```
 notebooks/      NN_<slug>.ipynb, committed without outputs, each runs standalone in Colab
-scripts/        build_data.py (WSDB + SDSS SAS → data files + manifest; instructor only)
-data/           README.md (licences, columns) and MANIFEST.json; data files are release assets
+scripts/        build_data.py (WSDB + SDSS SAS → data files + manifest), zenodo_upload.py (instructor only)
+data/           README.md (licences, columns), MANIFEST.json, zenodo.json; data files are on Zenodo
 tests/          pytest tests
 _config.yml, _toc.yml, intro.md   Jupyter Book
 _static/custom.css                page layout as in the sibling tutorials

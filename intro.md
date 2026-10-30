@@ -37,4 +37,5 @@ elementary stellar astrophysics (what $T_{\rm eff}$, $\log g$ and [Fe/H] mean).
 [ApJ 853, 198](https://ui.adsabs.harvard.edu/abs/2018ApJ...853..198N).
 
 **Data.** APOGEE DR17 spectra and labels (SDSS Science Archive Server and the WSDB database in Cambridge) and
-Gaia DR3 RVS spectra. See `data/README.md` for sources and licences.
+Gaia DR3 RVS spectra, published for this tutorial on Zenodo,
+[doi:10.5281/zenodo.23813051](https://doi.org/10.5281/zenodo.23813051). See `data/README.md` for sources and licences.

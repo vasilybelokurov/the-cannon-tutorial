@@ -1,10 +1,10 @@
 # Data for The Cannon tutorial
 
 Extracts of APOGEE DR17 and Gaia DR3, prepared for the notebooks of
-https://github.com/vasilybelokurov/the-cannon-tutorial and attached to its
-[`data-v0.1` release](https://github.com/vasilybelokurov/the-cannon-tutorial/releases/tag/data-v0.1).
-Files are only added to the release, never replaced: a changed selection is published under a new name, so a
-checksum in `MANIFEST.json` never changes.
+https://github.com/vasilybelokurov/the-cannon-tutorial and published on Zenodo,
+https://doi.org/10.5281/zenodo.23813051 (record https://zenodo.org/records/23813051). The notebooks download the
+files from there and check each one against the SHA-256 checksum in `MANIFEST.json`. A changed selection is
+published as a new file name in a new version of the record, so a checksum in `MANIFEST.json` never changes.
 
 Every file is rebuilt by `scripts/build_data.py`. `MANIFEST.json` lists, for each file, the exact query (SQL on
 WSDB, Cambridge, or a URL on the SDSS Science Archive Server), the row count, the size, the SHA-256 checksum and the
@@ -47,7 +47,7 @@ MULTIPLE_SUSPECT, RV_FAIL, SUSPECT_ROTATION, and with `vscatter < 1` km/s. Field
 | APOGEE DR17 line list | public | Smith et al. 2021, https://ui.adsabs.harvard.edu/abs/2021AJ....161..254S |
 | Gaia DR3 | open, with ESA/Gaia/DPAC credit | Gaia Collaboration 2023, https://ui.adsabs.harvard.edu/abs/2023A&A...674A...1G ; GSP-Spec: Recio-Blanco et al. 2023, https://ui.adsabs.harvard.edu/abs/2023A&A...674A..29R |
 
-The files themselves are distributed under CC BY 4.0.
+The files themselves are distributed under CC BY 4.0. Please cite the Zenodo record (https://doi.org/10.5281/zenodo.23813051) and the original data releases above.
 
 ## Acknowledgements
 

@@ -13,10 +13,9 @@ Status: in development. Chapters 0–9 are built (release v0.1); the plan, inclu
 
 Open any notebook in Google Colab, e.g.
 [Chapter 0](https://colab.research.google.com/github/vasilybelokurov/the-cannon-tutorial/blob/main/notebooks/00_apogee_spectra.ipynb).
-Each notebook downloads the data files it needs from this repository's
-[`data-v0.1` release](https://github.com/vasilybelokurov/the-cannon-tutorial/releases/tag/data-v0.1)
-and checks their SHA-256 checksums. Files are only ever added to the release; a changed selection gets a new file
-name, so a published checksum never changes.
+Each notebook downloads the data files it needs from Zenodo,
+[doi:10.5281/zenodo.23813051](https://doi.org/10.5281/zenodo.23813051), and checks their SHA-256 checksums. A
+changed selection gets a new file name in a new version of the record, so a published checksum never changes.
 
 ## Run locally
 
@@ -28,8 +27,9 @@ jupyter lab notebooks/
 
 ## Data
 
-The data files are extracts of APOGEE DR17 and Gaia DR3 made with `scripts/build_data.py`, which records the
-exact query of each file in `data/MANIFEST.json`. Sources, licences and acknowledgements:
+The data files (https://doi.org/10.5281/zenodo.23813051, CC BY 4.0) are extracts of APOGEE DR17 and Gaia DR3 made
+with `scripts/build_data.py`, which records the exact query of each file in `data/MANIFEST.json`;
+`scripts/zenodo_upload.py` publishes them. Sources, licences and acknowledgements:
 [data/README.md](data/README.md).
 
 ## Licence
