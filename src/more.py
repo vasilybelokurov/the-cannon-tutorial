@@ -86,10 +86,26 @@ def fit_theta_l1(V, flux, var, lam=0.0, mask=None, theta0=None, chunk=2048, tol=
     return theta, n_used
 
 
-def train_more(x, flux, err, lam=0.0, mask=None, order=2, n_iter=3):
-    """Training step with polynomial order, censoring mask and L1 regularisation; scatter by maximum likelihood as in
-    `train` (Chapter 2). Returns theta (P, D) and s (P,)."""
+def median_scatter(resid, err2, n_bisect=50):
+    """AnniesLasso's scatter: at each pixel the s >= 0 for which the median of resid^2 / (err2 + s^2) over the stars is
+    1 (s = 0 where it is already below 1). Bisection on all pixels at once; zero-weight entries are ignored."""
+    z = lambda s: np.nanmedian(np.where(np.isfinite(err2), resid**2 / (err2 + s**2), np.nan), axis=0)
+    lo, hi = np.zeros(resid.shape[1]), np.full(resid.shape[1], 1.0)
+    for _ in range(n_bisect):                                # median chi^2 decreases with s
+        mid = (lo + hi) / 2
+        big = z(mid) > 1
+        lo, hi = np.where(big, mid, lo), np.where(big, hi, mid)
+    return np.where(z(0.0) > 1, hi, 0.0)
+
+
+def train_more(x, flux, err, lam=0.0, mask=None, order=2, n_iter=3, scatter='ml'):
+    """Training step with polynomial order, censoring mask and L1 regularisation. scatter='ml': coefficients and
+    maximum-likelihood scatter iterated, as in `train` (Chapter 2). scatter='median': AnniesLasso's recipe —
+    coefficients fitted once with s = 0, then s from `median_scatter`. Returns theta (P, D) and s (P,)."""
     V, err2 = vectorize_n(x, order), err**2
+    if scatter == 'median':
+        theta = fit_theta_l1(V, flux, err2, lam, mask)[0]
+        return theta, median_scatter(flux - V @ theta.T, err2)
     s, theta = np.zeros(flux.shape[1]), None
     for _ in range(n_iter):
         theta = fit_theta_l1(V, flux, err2 + s**2, lam, mask, theta)[0]     # each fit starts from the previous one

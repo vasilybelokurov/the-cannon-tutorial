@@ -152,6 +152,18 @@ def test_train_more_without_extras_is_train():
     assert np.allclose(th0, th1, atol=1e-10) and np.allclose(s0, s1)
 
 
+def test_median_scatter_sets_the_median_chi2_to_one():
+    """Gaussian residuals with sigma^2 + s_true^2: median chi^2 = 1 needs s^2 = 0.455 (sigma^2 + s_true^2) - sigma^2,
+    because the median of a chi^2 with one degree of freedom is 0.455; and s = 0 where that is negative."""
+    rng = np.random.default_rng(10)
+    N, sigma = 20000, 0.01
+    s_true = np.array([0.0, 0.01, 0.03])
+    resid = rng.normal(0, 1, (N, 3)) * np.sqrt(sigma**2 + s_true**2)
+    s = median_scatter(resid, np.full((N, 3), sigma**2))
+    expect = np.sqrt(np.maximum(0.4549 * (sigma**2 + s_true**2) - sigma**2, 0))
+    assert s[0] == 0 and np.allclose(s[1:], expect[1:], rtol=0.03)
+
+
 def test_in_hull_sees_what_the_label_ranges_miss():
     """Labels along a line: a point inside both 1-D ranges but off the line is outside the hull."""
     t = np.random.default_rng(7).uniform(-1, 1, 200)

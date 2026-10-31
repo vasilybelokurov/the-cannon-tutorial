@@ -6,3 +6,4 @@ _build/
 data_build/
 notebooks/data/
 notebooks/model_12labels.npz
+.lux_ref/

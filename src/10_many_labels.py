@@ -253,6 +253,44 @@ assert min(path[l]['chi2'] for l in LAMS[1:]) < path[0]['chi2'] and path[1e4]['c
 assert np.median(path[1e4]['rob'] / path[0]['rob']) > 1
 
 # %% [markdown]
+# ### Does this depend on how the scatter is fitted?
+#
+# Our `train_more` fits the coefficients with weights $1/(\sigma^2 + s^2)$ and $s$ by maximum likelihood, iterated.
+# AnniesLasso fits the coefficients once with $s = 0$ and then sets $s$ so that the median $\chi^2$ of the training
+# stars is 1 (`scatter='median'`, the appendix explains the difference). Its $\chi^2$ ignores $s$ and is therefore
+# larger, so the same $\Lambda$ regularises less: it takes $\Lambda \approx 3000$ to zero the 27% of the
+# coefficients that $\Lambda = 300$ zeroes in our recipe. Repeat the comparison with AnniesLasso's recipe at
+# $\Lambda = 0$ and $\Lambda = 3000$.
+
+# %%
+t0 = time.time()
+rec = {}
+for lam in [0, 3000]:
+    th, s = train_more(x[tr], flux[tr], err[tr], lam, scatter='median')
+    rec[lam] = {'zero': np.mean(th[use, 1:] == 0),
+                'validation': rob(label_set(flux[val], err[val], th, s, pv, sc)[0] - L[val]),
+                'test': rob(label_set(ft, et, th, s, pv, sc)[0] - Lt)}
+    print(f"AnniesLasso recipe, Lambda = {lam:4d}: zero coefficients {rec[lam]['zero']:.2f}; robust std "
+          f"T_eff, log g, median [X/Fe]: validation {rec[lam]['validation'][0]:.1f} K, {rec[lam]['validation'][1]:.3f}, "
+          f"{np.median(rec[lam]['validation'][3:]):.4f}; test {rec[lam]['test'][0]:.1f} K, {rec[lam]['test'][1]:.3f}, "
+          f"{np.median(rec[lam]['test'][3:]):.4f}")
+print(f'{time.time() - t0:.0f} s')
+
+# %% [markdown]
+# With AnniesLasso's recipe, too, regularising a quarter of the coefficients to zero does not improve the labels of
+# either the validation or the test stars; the conclusion above does not depend on how the scatter is fitted. (The
+# two recipes differ in other ways: without regularisation AnniesLasso's is slightly better on the high-S/N
+# validation stars and worse in $T_{\rm eff}$ on the low-S/N test stars, and its labels degrade more slowly as
+# $\Lambda$ grows.)
+#
+# **Checks.**
+
+# %%
+assert abs(rec[3000]['zero'] - path[300]['zero']) < 0.05, 'Lambda = 3000 no longer matches the sparsity of Lambda = 300'
+for split in ['validation', 'test']:
+    assert np.median(rec[3000][split][3:]) > 0.97 * np.median(rec[0][split][3:]), f'regularisation helps ({split})'
+
+# %% [markdown]
 # ## 10.3 Censoring: each abundance from its own lines
 #
 # Chapter 8 asked whether [Mg/Fe] is *measured* from Mg lines or *predicted* from the rest of the spectrum through
@@ -421,7 +459,8 @@ assert inside['test stars, 12 labels'].mean() < 0.5
 #   Before attributing a gain to the extra labels, try a more flexible model with the same labels.
 # - L1 regularisation (C16) makes the model sparse and, when moderate, its predicted spectra better. In our tests it
 #   improved the labels only when the training set was not much larger than the number of coefficients (at 120
-#   stars, not at 300 or 1308; two random subsets per size, $\Lambda$ not re-tuned per size).
+#   stars, not at 300 or 1308; two random subsets per size, $\Lambda$ not re-tuned per size), whether the scatter is
+#   fitted our way or AnniesLasso's.
 # - Censoring makes each abundance a measurement from its own lines. At S/N 50–100 it improves Mg, Al, Si, Ca, Mn and
 #   Ni, and degrades O, C and $T_{\rm eff}$; the outcome depends on the element and on the windows (Holtzman et al.
 #   2018).
