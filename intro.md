@@ -81,11 +81,11 @@ code against AnniesLasso 0.2.96: run the same way, the two agree to numerical pr
 7. Star clusters as a test
 8. More labels: element abundances, and whether they are measured or predicted
 9. Label transfer to Gaia RVS spectra
+10. Many labels: flexibility, L1 regularisation, censoring
 
 Appendix: our Cannon against a published implementation (AnniesLasso)
 
-Later chapters (masses and ages of red giants, a regularised model with many abundances, chemical
-doppelgängers) are planned in `STRUCTURE.md` in the repository.
+Later chapters (masses and ages of red giants, chemical doppelgängers) are planned in `STRUCTURE.md` in the repository.
 
 **Prerequisites.** Basic Python (numpy, matplotlib), basic statistics (least squares, Gaussian likelihood) and
 elementary stellar astrophysics (what $T_{\rm eff}$, $\log g$ and [Fe/H] mean).

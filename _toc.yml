@@ -11,4 +11,5 @@ chapters:
   - file: notebooks/07_clusters
   - file: notebooks/08_abundances
   - file: notebooks/09_gaia_rvs
+  - file: notebooks/10_many_labels
   - file: notebooks/A_annieslasso

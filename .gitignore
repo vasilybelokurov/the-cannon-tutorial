@@ -5,3 +5,4 @@ _build/
 .pytest_cache/
 data_build/
 notebooks/data/
+notebooks/model_12labels.npz
