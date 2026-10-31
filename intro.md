@@ -66,7 +66,8 @@ starts. The inferred labels agree with APOGEE's within 2 K, 0.09 dex and 0.04 de
 from scratch in Chapter 2, from the equations of Ness et al. (2015) and Casey et al. (2016), with numpy and scipy
 only, and reused in the later chapters. For research use, see the published packages:
 [TheCannon](https://github.com/annayqho/TheCannon) (Ho et al. 2016, [ascl:1602.010](https://ui.adsabs.harvard.edu/abs/2016ascl.soft02010H))
-and [AnniesLasso](https://github.com/andycasey/AnniesLasso) (*The Cannon 2*, Casey et al. 2016).
+and [AnniesLasso](https://github.com/andycasey/AnniesLasso) (*The Cannon 2*, Casey et al. 2016). The appendix checks our
+code against AnniesLasso 0.2.96: run the same way, the two agree to numerical precision.
 
 **Chapters**
 
@@ -80,6 +81,8 @@ and [AnniesLasso](https://github.com/andycasey/AnniesLasso) (*The Cannon 2*, Cas
 7. Star clusters as a test
 8. More labels: element abundances, and whether they are measured or predicted
 9. Label transfer to Gaia RVS spectra
+
+Appendix: our Cannon against a published implementation (AnniesLasso)
 
 Later chapters (masses and ages of red giants, a regularised model with many abundances, chemical
 doppelgängers) are planned in `STRUCTURE.md` in the repository.

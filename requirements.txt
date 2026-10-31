@@ -3,3 +3,5 @@ scipy
 matplotlib
 pandas
 pyarrow
+annieslasso==0.2.96
+six
