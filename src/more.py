@@ -1,6 +1,7 @@
 # --- More of The Cannon (Chapter 10): any polynomial order, censoring, L1 regularisation, several starting points,
 # --- and a test of whether labels lie inside the training set -------------------------------------------------
 from itertools import combinations_with_replacement
+import warnings
 from scipy.optimize import linprog
 
 
@@ -33,7 +34,7 @@ def censor_mask(allowed, order=2):
     return np.hstack([np.ones((len(allowed), 1), bool)] + [allowed[:, list(t)].all(axis=1, keepdims=True) for t in T])
 
 
-def fit_theta_l1(V, flux, var, lam=0.0, mask=None, theta0=None, chunk=2048, tol=1e-6, max_iter=20000, kappa=0.1):
+def fit_theta_l1(V, flux, var, lam=0.0, mask=None, theta0=None, chunk=2048, tol=1e-8, max_iter=20000, kappa=0.1):
     """At every pixel minimise chi^2 + lam * sum_{d >= 1} |theta_d| (Casey et al. 2016), with theta_d = 0 where
     mask (P, D) is False. lam = 0: weighted least squares, solved directly. lam > 0: ADMM (Boyd et al. 2011, §6.4) on rescaled coefficients,
     all pixels of a chunk at once, started from theta0 (P, D) if given. Weights 1/var (N, P); zero-weight entries drop
@@ -78,6 +79,8 @@ def fit_theta_l1(V, flux, var, lam=0.0, mask=None, theta0=None, chunk=2048, tol=
             act = act[~done]
             if len(act) == 0:
                 break
+        if len(act):
+            warnings.warn(f'fit_theta_l1: {len(act)} pixels did not converge in {max_iter} iterations')
         n_used = max(n_used, it + 1)
         theta[sl] = z * d                                        # z has the exact zeros
     return theta, n_used
@@ -96,7 +99,8 @@ def train_more(x, flux, err, lam=0.0, mask=None, order=2, n_iter=3):
 
 def test_more(flux, err, theta, s, order=2, starts=None):
     """Test step for one spectrum, as `test` (Chapter 2) but for any polynomial order and from several starting
-    points (rows of `starts`, scaled labels; default: the median labels, 0); the fit with the lowest chi^2 is kept.
+    points (rows of `starts`, scaled labels; default: the median labels, 0); of the fits that converged, the one with
+    the lowest chi^2 is kept.
     Returns scaled labels, covariance, chi^2, number of pixels used, converged?"""
     K = next(k for k in range(1, 100) if 1 + len(label_terms(k, order)) == theta.shape[1])
     ok = np.isfinite(flux) & np.isfinite(err) & (theta[:, 0] != 0)
@@ -106,14 +110,19 @@ def test_more(flux, err, theta, s, order=2, starts=None):
     jac = lambda x: -(th @ dvectorize_n(x, order)) * w[:, None]
     fits = [least_squares(res, x0, jac=jac, method='lm') for x0 in (np.zeros((1, K)) if starts is None else
                                                                      np.atleast_2d(starts))]
-    r = min(fits, key=lambda r: np.sum(r.fun**2))
+    r = min(fits, key=lambda r: (not r.success, np.sum(r.fun**2)))   # converged fits first, then lowest chi^2
     return r.x, np.linalg.pinv(r.jac.T @ r.jac), np.sum(r.fun**2), ok.sum(), r.success
 
 
 def in_hull(x, X):
     """Is each row of x (M, K) inside the convex hull of the training labels X (N, K)? True if x is a weighted mean
     of training points with non-negative weights summing to 1: a linear-programming feasibility problem, which works
-    in any number of dimensions (a Delaunay triangulation does not, beyond a few)."""
-    A = np.vstack([X.T, np.ones(len(X))])
-    return np.array([linprog(np.zeros(len(X)), A_eq=A, b_eq=np.r_[p, 1], bounds=(0, None), method='highs').status == 0
-                     for p in np.atleast_2d(x)])
+    in any number of dimensions (a Delaunay triangulation does not, beyond a few). Labels are scaled by the standard
+    deviation of X so that kelvin and dex are treated alike."""
+    sd = X.std(axis=0)
+    A = np.vstack([(X / sd).T, np.ones(len(X))])
+    status = np.array([linprog(np.zeros(len(X)), A_eq=A, b_eq=np.r_[p / sd, 1], bounds=(0, None), method='highs').status
+                       for p in np.atleast_2d(x)])
+    if not np.all((status == 0) | (status == 2)):              # 0: feasible (inside), 2: infeasible (outside)
+        raise RuntimeError(f'linprog failed with status {set(status) - {0, 2}}')
+    return status == 0

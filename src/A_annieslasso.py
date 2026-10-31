@@ -319,7 +319,10 @@ print(f'pixels where AnniesLasso ends higher by more than 1: {np.sum(dF > 1)}')
 # **Checks.** At most pixels both codes reach the same minimum (the median difference is $\sim10^{-7}$ in a function
 # of order $10^3$). At 8% of the pixels the two spectral models differ by more than a tenth of the noise for at least
 # one training star, and at every one of them AnniesLasso's function value is the higher: its L-BFGS stopped before
-# the minimum (for an L1 problem the model spectrum at the minimum is unique). Our ADMM never ends higher. Where our solution has
+# the minimum (for an L1 problem the model spectrum of the training stars at the minimum is unique). Our ADMM never
+# ends higher. A lower value shows that AnniesLasso's solution is worse, not that ours is exactly optimal; the
+# optimality of ours is tested in `tests/test_cannon.py`. This check uses three labels and no scatter; the
+# twelve-label fits of Chapter 10 are covered only by those unit tests. Where our solution has
 # exact zeros, AnniesLasso's coefficients are $\sim10^{-13}$: numerically zero, but an optimiser for smooth
 # functions never sets them exactly to zero, so sparsity must be read with a threshold.
 

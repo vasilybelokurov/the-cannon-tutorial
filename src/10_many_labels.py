@@ -13,9 +13,9 @@
 #    apart;
 # 2. what L1 regularisation does (sparse coefficients, better predicted spectra) and when it improves the labels:
 #    only when the training set is not much larger than the number of coefficients;
-# 3. that censoring — letting each abundance act only near its own lines — trades precision for honesty, element by
+# 3. that censoring — letting each abundance act only near its own lines — changes the precision element by
 #    element (Holtzman et al. 2018);
-# 4. why a convex-hull test of "inside the training set" stops working in many dimensions.
+# 4. why a convex-hull test of "inside the training set" flags almost every star in many dimensions.
 #
 # **The new code** is in the block `more.py` below (tested in `tests/test_cannon.py`):
 # - `vectorize_n(x, order)` and `dvectorize_n`: label vectors of any polynomial order (for order 2 identical to
@@ -75,8 +75,9 @@ x = (L - pv) / sc
 # Chapter 8 found that a model with six labels gives better $T_{\rm eff}$ and $\log g$ than one with three: part of
 # the spectral effect of the abundances was being absorbed by the stellar parameters. Twelve labels push this
 # further — but they also make the model more flexible: 91 coefficients per pixel instead of 10. A three-label model
-# of *third* order has 20 coefficients and no abundances. Compare the three on the validation stars (high S/N, never
-# trained on) and the test stars (S/N 50–100).
+# of *third* order has 20 coefficients and no abundances. Compare the three on the validation stars (high S/N, not
+# used to train the models; they did help to choose the continuum pixels in Chapter 3, which Chapter 5 found to
+# change the precision by less than 2%) and the test stars (S/N 50–100), with labels measured against ASPCAP's.
 
 # %%
 t0 = time.time()
@@ -148,9 +149,10 @@ use = th12[:, 0] != 0                                          # pixels with dat
 path = {}
 for lam in LAMS:
     th, s = (th12, s12) if lam == 0 else train_more(x[tr], flux[tr], err[tr], lam)
-    z2 = (flux[val][:, use] - Vval @ th[use].T)**2 / (err[val][:, use]**2 + s12[use]**2)
+    ok = np.isfinite(err[val][:, use])                        # pixels with zero weight are not counted
+    z2 = np.where(ok, (flux[val][:, use] - Vval @ th[use].T)**2 / (err[val][:, use]**2 + s12[use]**2), np.nan)
     lab = label_set(flux[val], err[val], th, s, pv, sc)[0]
-    path[lam] = {'zero': np.mean(th[use, 1:] == 0), 'chi2': np.nanmean(np.where(np.isfinite(z2), z2, np.nan)),
+    path[lam] = {'zero': np.mean(th[use, 1:] == 0), 'chi2': np.nanmean(z2),
                  'rob': rob(lab - L[val])}
     print(f"Lambda = {lam:7.0f}: zero coefficients {path[lam]['zero']:.2f}, validation chi^2 per pixel "
           f"{path[lam]['chi2']:.3f}, T_eff {path[lam]['rob'][0]:.1f} K, median [X/Fe] {np.median(path[lam]['rob'][3:]):.4f}")
@@ -230,13 +232,14 @@ plt.show()
 # stars (two subsets each) and on all 1308, without (black) and with (red) L1 regularisation; lines join the means.
 # The dotted line marks the number of coefficients per pixel. With 120 training stars the unregularised model
 # overfits — its $\log g$ is twice as bad as with 300 — and regularisation recovers much of the loss, in $\log g$ and
-# in the abundances. From a few hundred stars on, it no longer helps. C16 used it for a 17-label model (171
-# coefficients per pixel); it matters when the training set is small for the number of labels.
+# in the abundances. With 300 or 1308 stars this penalty no longer helps. Two caveats: there are only two random
+# subsets per size, and $\Lambda$ was not re-tuned for each size (a $\Lambda$ chosen separately for 300 stars might still
+# help a little). C16 used regularisation for a 17-label model (171 coefficients per pixel); it matters when the
+# training set is small for the number of labels.
 #
 # One feature of this figure we have not explained: the abundances of the validation stars come out *better* from
-# 300 training stars than from all 1308 (for both random subsets; 600 stars, not shown, fall in between). On the
-# low-S/N test stars there is no such trend. It is not caused by the regularisation, which is absent in the black
-# points; it is listed as an open question in `STRUCTURE.md`.
+# 300 training stars than from all 1308, for both random subsets and without regularisation. It is listed, with
+# tests to run, as an open question in `STRUCTURE.md`.
 #
 # **Checks.**
 
@@ -309,18 +312,21 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# **Figure 10.4.** **(a)** The derivative of the flux with respect to [Mg/Fe] in a 70 Å window, in the uncensored
+# **Figure 10.4.** **(a)** The derivative of the flux with respect to [Mg/Fe] at the median labels (the linear
+# coefficient; away from the median the cross terms change it) in a 70 Å window, in the uncensored
 # (blue) and censored (red) twelve-label models; the green bands are the pixels within 1 Å of Mg I lines, the only
 # ones where the censored model may use [Mg/Fe]. The uncensored model also gives [Mg/Fe] small derivatives
 # everywhere else (the fraction printed above). **(b)** The robust standard deviation of each label with censoring,
 # relative to the uncensored model, for the validation (high S/N) and test (S/N 50–100) stars. At low S/N censoring
-# *improves* Mg, Al, Si, Ca, Mn and Ni (by 12–21%): the small derivatives spread over thousands of pixels mostly fit
-# noise. At high S/N it improves only Mg, Al and Ca, and costs 6–17% in Si, Mn and Ni, whose information outside
-# the windows is real there. It degrades O and C at both — their information is spread over many molecular lines, which our 1 Å windows around 60
-# lines per molecule capture only in part — and $T_{\rm eff}$, which loses the cross terms with the abundances away
-# from their lines. Holtzman et al. 2018 saw the same kind of element-by-element change for DR14 (worse Ca, still
-# good Ni, with the ASPCAP windows). The abundances of a censored model are measured from their own lines; whether
-# that costs precision depends on the element and on how good the windows are.
+# *improves* Mg, Al, Si, Ca, Mn and Ni (by 12–21%). A likely reason is that the small derivatives spread over
+# thousands of pixels fit noise more than signal at low S/N; we have not proved it. At high S/N censoring improves
+# only Mg, Al and Ca, and costs 6–17% in Si, Mn and Ni, which may draw on real information outside our windows — or on
+# correlations with other labels in the training set; this experiment cannot tell which. It degrades O and C at
+# both S/N — their information is spread over many molecular lines, which our 1 Å windows around 60 lines per molecule
+# capture only in part — and $T_{\rm eff}$, which loses the cross terms with the abundances away from their lines.
+# Holtzman et al. 2018 saw the same kind of element-by-element change for DR14 (worse Ca, still good Ni, with the
+# ASPCAP windows). Censoring guarantees only that an abundance acts directly on its own pixels; it still couples to
+# the other labels in the joint fit. All precisions here are measured against ASPCAP, which is not the truth.
 #
 # **Checks.**
 
@@ -336,7 +342,7 @@ assert out_frac > 0.5
 #
 # **Several starting points.** The test step of Chapter 2 starts at the median labels. With twelve labels the
 # $\chi^2$ surface has more room for local minima. Start also from four other points (low and high [Fe/H] and
-# $T_{\rm eff}$, in scaled units) and keep the fit with the lowest $\chi^2$.
+# $T_{\rm eff}$, in scaled units) and keep, of the fits that converged, the one with the lowest $\chi^2$.
 #
 # **Inside the training set?** Chapter 5 flagged extrapolation with N15's EFLAG. AnniesLasso tests whether the labels
 # lie inside the convex hull of the training labels, with a Delaunay triangulation; that does not work beyond a few
@@ -354,12 +360,16 @@ dchi = chi_one - chi_many
 better = dchi > 1
 print(f'several starting points: chi^2 lower by > 1 for {better.sum()} of {len(ft)} test stars '
       f'(largest improvement {dchi.max():.0f}); their T_eff changes by up to {np.abs(lab_many - lab_one)[better, 0].max():.0f} K')
+closer = np.abs(lab_many - Lt)[better] < np.abs(lab_one - Lt)[better]     # (stars, labels): closer to ASPCAP?
+print(f'for these stars the new labels are closer to ASPCAP in {closer.mean():.0%} of the (star, label) pairs; '
+      f'T_eff closer for {closer[:, 0].sum()} of {better.sum()}')
 mp = labels[labels['sample'] == 'metalpoor'][NAMES[:3]].to_numpy()
 inside = {'test stars, 3 labels': in_hull(Lt[:, :3], L[tr, :3]), 'test stars, 12 labels': in_hull(Lt, L[tr]),
           'metal-poor stars, 3 labels': in_hull(mp, L[tr, :3])}
 for k, v in inside.items():
     print(f'inside the training-set hull: {v.mean():.2f} of {k}')
-path = Path('model_12labels.npz')
+import tempfile
+path = Path(tempfile.mkdtemp()) / 'model_12labels.npz'
 np.savez(path, theta=th12, s=s12, pivot=pv, scale=sc, names=NAMES)
 with np.load(path) as m:
     assert np.array_equal(m['theta'], th12) and list(m['names']) == NAMES
@@ -387,12 +397,15 @@ plt.show()
 # %% [markdown]
 # **Figure 10.5.** **(a)** Test stars labelled with the twelve-label model from the median labels only, and from the
 # best of five starting points: for most stars the two fits are the same (grey); for a few (red) another start finds
-# a lower $\chi^2$ and a different $T_{\rm eff}$. **(b)** Kiel diagram of the training set (grey) and of the
+# a lower $\chi^2$ and a different $T_{\rm eff}$. A lower $\chi^2$ is a better fit of the model, not necessarily
+# better labels: the printout above says how often the new labels are closer to ASPCAP's. **(b)** Kiel diagram of the training set (grey) and of the
 # metal-poor sample of Chapter 5 (red), all outside the convex hull of the training labels in ($T_{\rm eff}$,
-# $\log g$, [Fe/H]). In three dimensions every ordinary test star is inside the hull. In twelve dimensions only the
-# blue ones are, fewer than one in five, although all of them are ordinary disc giants like the training stars: in many
-# dimensions almost every new point lies outside the hull of a finite sample, and the test no longer separates
-# interpolation from extrapolation. Use it on the few labels that matter most.
+# $\log g$, [Fe/H]). In three dimensions almost every test star is inside the hull (fraction printed above). In
+# twelve dimensions only the blue ones are, fewer than one in five, although the test stars are disc giants drawn from
+# the same survey as the training stars: in many dimensions almost every new point lies outside the hull of a finite
+# sample. Being outside the twelve-dimensional hull therefore says little by itself (we have not measured whether
+# those stars have worse labels). Testing a few labels is more useful, at the price of missing extrapolation in the
+# others.
 #
 # **Checks.**
 
@@ -406,13 +419,15 @@ assert inside['test stars, 12 labels'].mean() < 0.5
 #
 # - Twelve labels make $T_{\rm eff}$ about a third more precise than three — but so does a cubic three-label model.
 #   Before attributing a gain to the extra labels, try a more flexible model with the same labels.
-# - L1 regularisation (C16) makes the model sparse and its predicted spectra better. It improves the labels only when
-#   the training set is not much larger than the number of coefficients (here at 120 stars, not at 300 or 1308).
+# - L1 regularisation (C16) makes the model sparse and, when moderate, its predicted spectra better. In our tests it
+#   improved the labels only when the training set was not much larger than the number of coefficients (at 120
+#   stars, not at 300 or 1308; two random subsets per size, $\Lambda$ not re-tuned per size).
 # - Censoring makes each abundance a measurement from its own lines. At S/N 50–100 it improves Mg, Al, Si, Ca, Mn and
 #   Ni, and degrades O, C and $T_{\rm eff}$; the outcome depends on the element and on the windows (Holtzman et al.
 #   2018).
-# - Several starting points rescue a few test fits in a hundred, some by hundreds of kelvin; a convex-hull test of extrapolation works in
-#   three dimensions but not in twelve.
+# - Several starting points find a better fit for a few test stars in a hundred, some hundreds of kelvin away —
+#   but the new labels are closer to ASPCAP's for only about half of them. A convex-hull test of extrapolation is
+#   informative in three dimensions; in twelve it flags most ordinary stars.
 # - The appendix compares our regularised training step with AnniesLasso's.
 #
 # ## References

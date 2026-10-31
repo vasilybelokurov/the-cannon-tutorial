@@ -89,6 +89,26 @@ def test_l1_solution_satisfies_optimality_conditions(lam):
     assert 0 < nz.mean() < 1                               # some, not all, coefficients are zero
 
 
+def test_l1_default_tolerance_is_optimal_for_a_correlated_twelve_label_design():
+    """Twelve labels drawn with strong correlations (as abundances are), noise differing between stars and pixels and
+    some masked pixels: at the default tolerance the optimality conditions hold to 1% of lam (review finding)."""
+    rng = np.random.default_rng(9)
+    N, K, P, lam = 400, 12, 30, 300.0
+    C = 0.7 + 0.3 * np.eye(K)                                  # correlation 0.7 between all labels
+    x = 0.5 * rng.multivariate_normal(np.zeros(K), C, N)
+    V = vectorize_n(x)
+    theta = np.c_[np.ones(P), rng.normal(0, 0.02, (P, V.shape[1] - 1))]
+    err = rng.uniform(0.005, 0.03, (N, P))
+    flux = V @ theta.T + rng.normal(0, 1, (N, P)) * err
+    err[rng.random((N, P)) < 0.05] = np.inf                    # masked pixels
+    th = fit_theta_l1(V, flux, err**2, lam)[0]
+    A, b = normal_equations(V, np.where(np.isfinite(err), flux, 0), err**2)
+    g = 2 * (np.einsum("pde,pe->pd", A, th) - b)
+    nz = th[:, 1:] != 0
+    viol = np.where(nz, np.abs(g[:, 1:] + lam * np.sign(th[:, 1:])), np.maximum(np.abs(g[:, 1:]) - lam, 0))
+    assert viol.max() < 0.01 * lam and np.abs(g[:, 0]).max() < 0.01 * lam
+
+
 def test_l1_with_huge_lambda_leaves_the_weighted_mean():
     x, _, flux, err = synthetic(300, 3, 50)
     th = fit_theta_l1(vectorize_n(x), flux, err**2, 1e12)[0]
@@ -137,3 +157,4 @@ def test_in_hull_sees_what_the_label_ranges_miss():
     t = np.random.default_rng(7).uniform(-1, 1, 200)
     X = np.c_[t, t + np.random.default_rng(8).normal(0, 0.05, 200)]
     assert list(in_hull([[0, 0], [0.8, -0.8], [3, 3]], X)) == [True, False, False]
+    assert list(in_hull([[0, 0], [3000, 3000]], X * [1000, 1])) == [True, False]   # units do not matter
