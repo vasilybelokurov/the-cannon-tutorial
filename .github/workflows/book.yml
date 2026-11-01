@@ -33,7 +33,9 @@ jobs:
           path: notebooks/data
           key: data-${{ hashFiles('data/MANIFEST.json') }}   # a new or rebuilt file changes the manifest, hence the key
       - name: Tests and notebooks
-        run: pytest -q -n 2 tests/ --nbmake notebooks/ --nbmake-timeout=2400 --overwrite   # two at a time; executed notebooks are kept for the book
+        run: pytest -q -n 2 tests/ --nbmake notebooks/ --ignore=notebooks/B_pollux.ipynb --nbmake-timeout=2400 --overwrite   # two at a time; executed notebooks are kept for the book
+      - name: Appendix B (pollux, JAX)
+        run: pytest -q --nbmake notebooks/B_pollux.ipynb --nbmake-timeout=3600 --overwrite   # alone: JAX takes all cores and much memory
       - name: Build book
         run: jupyter-book build . -W -n --keep-going
       - uses: actions/upload-pages-artifact@v3
