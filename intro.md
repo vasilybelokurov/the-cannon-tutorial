@@ -67,7 +67,9 @@ from scratch in Chapter 2, from the equations of Ness et al. (2015) and Casey et
 only, and reused in the later chapters. For research use, see the published packages:
 [TheCannon](https://github.com/annayqho/TheCannon) (Ho et al. 2016, [ascl:1602.010](https://ui.adsabs.harvard.edu/abs/2016ascl.soft02010H))
 and [AnniesLasso](https://github.com/andycasey/AnniesLasso) (*The Cannon 2*, Casey et al. 2016). The appendix checks our
-code against AnniesLasso 0.2.96: run the same way, the two agree to numerical precision.
+code against AnniesLasso 0.2.96: run the same way, the two agree to numerical precision. For research use, the
+[pollux](https://github.com/adrn/pollux) package (A. Price-Whelan) implements both The Cannon and Lux (Chapter 11)
+in JAX; Appendix B shows how to use it and checks our code against it.
 
 **Chapters**
 
@@ -82,8 +84,11 @@ code against AnniesLasso 0.2.96: run the same way, the two agree to numerical pr
 8. More labels: element abundances, and whether they are measured or predicted
 9. Label transfer to Gaia RVS spectra
 10. Many labels: flexibility, L1 regularisation, censoring
+11. Beyond The Cannon: a latent-variable model (Lux)
 
-Appendix: our Cannon against a published implementation (AnniesLasso)
+Appendix A: our Cannon against a published implementation (AnniesLasso)
+
+Appendix B: Lux and The Cannon with *pollux*
 
 Later chapters (masses and ages of red giants, chemical doppelgängers) are planned in `STRUCTURE.md` in the repository.
 

@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCES = sorted(p for p in (ROOT / "src").glob("*.py") if p.stem[0].isdigit() or p.stem.startswith("A_"))
+SOURCES = sorted(p for p in (ROOT / "src").glob("*.py") if p.stem[0].isdigit() or p.stem[:2] in ("A_", "B_"))
 
 
 @pytest.mark.parametrize("src", SOURCES, ids=[p.stem for p in SOURCES])

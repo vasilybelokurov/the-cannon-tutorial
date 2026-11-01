@@ -12,4 +12,6 @@ chapters:
   - file: notebooks/08_abundances
   - file: notebooks/09_gaia_rvs
   - file: notebooks/10_many_labels
+  - file: notebooks/11_lux
   - file: notebooks/A_annieslasso
+  - file: notebooks/B_pollux

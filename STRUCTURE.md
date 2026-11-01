@@ -57,7 +57,9 @@ first guess failed, the test was changed to what the data showed and the text sa
 | 08 | `08_abundances` | Six labels; literature comparison (C16, N18, Leung & Bovy 19); derivatives at Mg I, CO, CN lines; α sequences at S/N 50–100; measured or predicted: Mg lines hidden, random-pixel control, prediction from the other ASPCAP labels and from Cannon labels without Mg lines | `spectra_train`, `spectra_test`, `linelist` | rms/spread < 0.6, 0.7, 0.9 for Mg, C, N [0.49, 0.57, 0.80]; six labels improve T_eff, log g over three [53 vs 72 K]; own-line derivative > 2× average; same α sequence as ASPCAP > 80% [88%]; Mg lines hidden > +10% [+16%], random < +3% [0%]; predictions from the other labels within 10% of the six-label scatter [0.063, 0.067 vs 0.063] |
 | 09 | `09_gaia_rvs` | Label transfer APOGEE → Gaia DR3 RVS; Gaia normalisation unstable at low S/N; renormalisation on continuum pixels chosen inside each fold; comparison with GSP-Spec (best-quality flags, RB23 calibration, robust std) and with Das+25 | `rvs_apogee`, `labels_rvs` | continuum-offset scatter at S/N 20–30 > 5× that at S/N > 70 and ρ(offset, Δ[Fe/H]) < −0.5 [−0.66]; renormalisation improves log g, [Fe/H] at S/N < 30 by > 30%, removes > 70% of the [Fe/H] outliers; on best-quality stars Cannon robust std < calibrated GSP-Spec for all three labels [48 vs 70 K, 0.13 vs 0.17, 0.066 vs 0.081; GSP-Spec better in log g, [Fe/H] at S/N > 100] |
 | 10 | `10_many_labels` | Twelve labels (T_eff, log g, [Fe/H], 9 [X/Fe]); more labels vs more flexibility (cubic); L1 regularisation (C16) by ADMM, Λ scan and training-set size; censoring with line-list windows (Holtzman+18); several starting points; convex-hull test; code in `src/more.py` | `spectra_train`, `spectra_test`, `linelist`, `labels` | cubic and 12 labels each improve validation T_eff > 20% [50 → 33, 34 K]; some Λ > 0 lowers held-out χ² [1.36 → 1.31 at Λ = 300], Λ = 10⁴ raises it and worsens labels; at N = 120 regularisation improves log g > 20% and [X/Fe] [0.22 → 0.14; 0.053 → 0.038], at full N it does not [0.046 → 0.050]; censoring improves Mg, Al, Ca, Ni at S/N 50–100 by > 5% [17–21%], degrades O and T_eff > 10%; multi-start never worse, lowers χ² for some [12 of 741; labels closer to ASPCAP for 6]; hull: 3-D test > 95% inside, metal-poor < 20%, 12-D < 50% [99%, 0%, 18%] |
+| 11 | `11_lux` | Lux (Horta+25): labels and spectra linear in a latent vector; training by weighted least squares (`src/lux.py`); P and the null space of under-determined steps; vs 12-label Cannon and ridge regression; Mg lines hidden; missing [N/Fe]; noisy training labels | `spectra_train`, `spectra_test`, `labels`, `linelist` | minimum-norm P = 49 ≡ P = 13 (rank 13) [exact]; Lux abundances better than Cannon on validation [0.035 vs 0.046], T_eff at S/N 50–100 > 1.3× worse [67 vs 34 K]; ridge abundances better than Cannon [0.039]; hiding Mg I lines costs > 10% for all three [20–43%] but Lux without them beats Cannon with them [0.033 vs 0.040]; missing [N/Fe] for half: Lux all ≈ Lux half (< 10%) [0.063 both]; noisy labels (5σ): Cannon abundances > 1.5× worse [2.0×, 2.1×], Lux < 1.15× [1.08×, 0.94×], ridge worse than Lux |
 | A | `A_annieslasso` | Our Cannon against AnniesLasso 0.2.96 (Casey+16 code) on the same 1703 training / 1500 test stars: first run the same way (bug check), then each as designed (method difference); four workarounds needed (numpy 2, scipy 1.18) | `spectra_train`, `spectra_test` | same model: spectral models agree < 1e-3 σ [2e-6 σ]; labels 99th pct < 0.05 formal σ [0.021]; where they differ AnniesLasso has the higher χ² [2 stars, Δχ² 0 and 17.8]; as designed: AL scatter ≤ ours at every pixel [median ratio 0.44]; codes differ < 0.3× scatter about ASPCAP [10 K, 0.032, 0.008 vs 51 K, 0.121, 0.033]; ours closer to ASPCAP in all labels [AL 56 K, 0.126, 0.036]; θ weights matter more than s |
+| B | `B_pollux` | Lux and The Cannon with pollux 0.1.0 (pinned versions): data containers, training, test step; exact check of our least-squares blocks; label precision of both implementations | as Ch 11 | block solvers agree < 1e-6 of errors [~1e-9]; Cannon precisions within 8%, Lux within 20% |
 
 Findings that changed the plan during the build: float16 flux storage was unsafe (Ch 0 test failed; files rebuilt
 with float32 flux); one scatter per pixel is inflated by ~3% outlier training stars (Ch 4 cleaning step); a six-label
@@ -78,9 +80,9 @@ every chapter.
 
 | Ch | Title | Data | Check |
 |---|---|---|---|
-| 11 | Masses and ages of red giants (N16: 0.07 dex in mass, 0.21 dex in age from 1639 APOKASC stars; CN features) | APOKASC-3 (Pinsonneault+25) × DR17 | CV rms log M |
-| 12 | Chemical doppelgängers (N18: ~0.3% of field pairs, ~1% at [Fe/H] = 0 ± 0.02, are indistinguishable) | DR17 clusters, field | pair χ² distribution of cluster vs field pairs |
-| 13 | Bootstrap model uncertainty and coverage (N15 Fig. 11) | DR17 | bootstrap vs formal errors in sparse regions |
+| 12 | Masses and ages of red giants (N16: 0.07 dex in mass, 0.21 dex in age from 1639 APOKASC stars; CN features) | APOKASC-3 (Pinsonneault+25) × DR17 | CV rms log M |
+| 13 | Chemical doppelgängers (N18: ~0.3% of field pairs, ~1% at [Fe/H] = 0 ± 0.02, are indistinguishable) | DR17 clusters, field | pair χ² distribution of cluster vs field pairs |
+| 14 | Bootstrap model uncertainty and coverage (N15 Fig. 11) | DR17 | bootstrap vs formal errors in sparse regions |
 
 ## Data (v0.1)
 
@@ -157,7 +159,7 @@ Pinsonneault+25 (APOKASC-3) https://ui.adsabs.harvard.edu/abs/2025ApJS..276...69
 
 ## Open items
 
-- APOKASC-3 (VizieR J/ApJS/276/69) was not reachable on 2026-10-30 (CDS down); Chapter 11 waits for it.
+- APOKASC-3 (VizieR J/ApJS/276/69) was not reachable on 2026-10-30 (CDS down); Chapter 12 waits for it.
 - Smith et al. 2021 (DR16/17 line list) https://ui.adsabs.harvard.edu/abs/2021AJ....161..254S · Asplund et al. 2009 https://ui.adsabs.harvard.edu/abs/2009ARA&A..47..481A · Morton 2000 https://ui.adsabs.harvard.edu/abs/2000ApJS..130..403M · Recio-Blanco et al. 2023 (GSP-Spec) https://ui.adsabs.harvard.edu/abs/2023A&A...674A..29R: checked in ADS.
 - The second, positive-offset group of faint-star RVS spectra (Ch 9): origin in the Gaia processing not traced.
 - Ch 10: validation-star abundances are better from 300 training stars than from 1308 (both subsets; not seen on the

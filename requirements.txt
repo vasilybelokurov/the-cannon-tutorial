@@ -5,3 +5,10 @@ pandas
 pyarrow
 annieslasso==0.2.96
 six
+# Appendix B (pollux): exact versions, because pollux's dependencies are not capped
+pollux==0.1.0
+xmmutablemap==0.2.2
+jax==0.12.0.1
+jaxlib==0.12.0.1
+numpyro==0.22.0
+equinox==0.13.8
