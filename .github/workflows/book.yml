@@ -20,6 +20,13 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    env:
+      # Parallel notebook workers already use the runner's cores. Small matrix solves suffer when each
+      # worker also starts a full BLAS thread pool (Ch 10 and Appendix A timed out in the previous build).
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,9 +40,11 @@ jobs:
           path: notebooks/data
           key: data-${{ hashFiles('data/MANIFEST.json') }}   # a new or rebuilt file changes the manifest, hence the key
       - name: Tests and notebooks
-        run: pytest -q -n 2 tests/ --nbmake notebooks/ --ignore=notebooks/B_pollux.ipynb --nbmake-timeout=2400 --overwrite   # two at a time; executed notebooks are kept for the book
+        run: pytest -q -n 2 tests/ --nbmake notebooks/ --ignore=notebooks/B_pollux.ipynb --ignore=notebooks/C_robustness.ipynb --nbmake-timeout=2400 --overwrite   # two at a time; executed notebooks are kept for the book
       - name: Appendix B (pollux, JAX)
         run: pytest -q --nbmake notebooks/B_pollux.ipynb --nbmake-timeout=3600 --overwrite   # alone: JAX takes all cores and much memory
+      - name: Appendix C (repeated robustness experiments)
+        run: pytest -q --nbmake notebooks/C_robustness.ipynb --nbmake-timeout=3600 --overwrite
       - name: Build book
         run: jupyter-book build . -W -n --keep-going
       - uses: actions/upload-pages-artifact@v3

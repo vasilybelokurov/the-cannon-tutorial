@@ -1,4 +1,4 @@
-"""Build the data files of the tutorial; they are attached to a GitHub release, not stored in git.
+"""Build the data files of the tutorial; they are published on Zenodo, not stored in git.
 
 Usage:  python scripts/build_data.py [name ...|all]   (writes data_build/<name>.{parquet,npz} and data/MANIFEST.json)
         python scripts/build_data.py continuum           (afterwards: runs Chapter 3 to make continuum_pixels)
@@ -51,7 +51,7 @@ COLS = ("apogee_id, telescope, field, ra, dec, glon, glat, j, h, k, ak_targ, snr
           "gaiaedr3_phot_bp_mean_mag, gaiaedr3_phot_rp_mean_mag")
 
 # Common quality cuts.
-# - telescope = 'apo25m': one instrument, hence one line-spread function for training and test stars.
+# - telescope = 'apo25m': one instrument; the line-spread function still varies with fibre (Chapter 4).
 # - aspcapflag bit 23 = STAR_BAD (ASPCAP fit unreliable).
 # - starflag: reject a named subset of APOGEE_STARFLAG bits (bit: name) - 0 BAD_PIXELS, 3 VERY_BRIGHT_NEIGHBOR,
 #   4 LOW_SNR, 9 PERSIST_HIGH, 16 SUSPECT_RV_COMBINATION, 17 SUSPECT_BROAD_LINES, 21 MULTIPLE_SUSPECT, 22 RV_FAIL,

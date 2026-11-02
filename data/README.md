@@ -15,15 +15,16 @@ creation time.
 | File | Format | Content |
 |---|---|---|
 | `labels` | parquet | APOGEE DR17 allStar rows of every star in the `spectra_*` files, with a `sample` column; calibrated labels (`teff`, `logg`, `m_h`, `alpha_m`, `fe_h`, `<x>_fe` for C, N, O, Mg, Al, Si, Ca, Mn, Ni), their errors and flags, `teff_spec`, `logg_spec`, `snr`, `nvisits`, `vscatter`, `starflag`, `aspcapflag`, `memberflag`, `member`, `meanfib`, Gaia EDR3 identifiers and photometry |
-| `spectra_<sample>` | npz | DR17 `apStar` spectra (APO 2.5 m) of the stars of one sample, in the order of `labels`: `flux`, `err` (float16, divided by `median`), `mask` (`APOGEE_PIXMASK`, int32), `median` (float32, units of 10⁻¹⁷ erg s⁻¹ cm⁻² Å⁻¹), `snr`, `apogee_id`, `star` (row in `labels` of that sample), `visit` (0 = combined spectrum; 1, 2, ... = single visits, only in `spectra_visits`) |
+| `spectra_<sample>` | npz | DR17 `apStar` spectra (APO 2.5 m) of the stars of one sample, in the order of `labels`: `flux` (float32), `err` (float16), both divided by `median`, `mask` (`APOGEE_PIXMASK`, int32), `median` (float32, units of 10⁻¹⁷ erg s⁻¹ cm⁻² Å⁻¹), `snr`, `apogee_id`, `star` (row in `labels` of that sample), `visit` (0 = combined spectrum; 1, 2, ... = single visits, only in `spectra_visits`) |
 | `continuum_pixels` | parquet | `pixel`, `wave_vac`, `continuum` (bool): the continuum pixels of Chapter 3 |
 | `linelist` | parquet | strongest lines in the APOGEE window from the DR17 Turbospectrum line lists (Smith et al. 2021): `species`, `wave_air`, `wave_vac` (Morton 2000), `chi_ev`, `loggf`, `strength` |
 | `rvs_apogee` | npz | Gaia DR3 RVS mean spectra of APOGEE giants: `flux`, `err` (float32, pseudo-continuum normalised by the Gaia pipeline), `wavelength_nm` (846–870 nm, 2401 pixels), `apogee_id` |
 | `labels_rvs` | parquet | the APOGEE labels of the stars in `rvs_apogee` (same columns as `labels`), `rvs_spec_sig_to_noise`, and Gaia GSP-Spec `teff_gspspec`, `logg_gspspec`, `mh_gspspec`, `alphafe_gspspec`, `flags_gspspec` |
 
 Spectra: the `apStar` wavelength grid is $\log_{10}(\lambda/{\rm Å}) = 4.179 + 6\times10^{-6}\,i$, $i = 0..8574$
-(vacuum, rest frame). Pixels without data are NaN. Float16 storage: relative rounding ≤ 2⁻¹¹ (Chapter 0 checks
-that this is < 0.25σ for 99.9% of the pixels).
+(vacuum, rest frame). Pixels without data are NaN. Flux is stored as float32; errors are stored as float16,
+whose relative rounding is ≤ 2⁻¹¹ of the error itself. Chapter 0 shows why float16 is unsafe for the flux of
+the highest-S/N stars and checks that float32 flux rounding is below 0.001σ.
 
 Sample definitions (full SQL in `MANIFEST.json`): all samples are APO 2.5 m, without ASPCAP `STAR_BAD`, without the
 STARFLAG bits BAD_PIXELS, VERY_BRIGHT_NEIGHBOR, LOW_SNR, PERSIST_HIGH, SUSPECT_RV_COMBINATION, SUSPECT_BROAD_LINES,

@@ -90,6 +90,9 @@ Appendix A: our Cannon against a published implementation (AnniesLasso)
 
 Appendix B: Lux and The Cannon with *pollux*
 
+Appendix C: stability of the training-size and Lux comparisons — repeated splits, missing and noisy labels,
+training-only continuum selection, and paired uncertainty intervals
+
 Later chapters (masses and ages of red giants, chemical doppelgängers) are planned in `STRUCTURE.md` in the repository.
 
 **Prerequisites.** Basic Python (numpy, matplotlib), basic statistics (least squares, Gaussian likelihood) and

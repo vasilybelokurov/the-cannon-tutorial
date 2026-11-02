@@ -39,7 +39,7 @@ label-transfer idea of Ho et al. 2017 (who used LAMOST), compared with Gaia's ow
 8. **Least code that works.** Each notebook is self-contained (runs alone in Colab); the small helpers (loader,
    normalisation, train, test) are repeated rather than hidden in a package.
 
-## Chapters (v0.1) — built 2026-10-30
+## Implemented chapters — updated 2026-11-02
 
 Asserts as implemented; measured values in brackets. Tolerances were frozen after a development run; where a
 first guess failed, the test was changed to what the data showed and the text says so.
@@ -60,6 +60,7 @@ first guess failed, the test was changed to what the data showed and the text sa
 | 11 | `11_lux` | Lux (Horta+25): labels and spectra linear in a latent vector; training by weighted least squares (`src/lux.py`); P and the null space of under-determined steps; vs 12-label Cannon and ridge regression; Mg lines hidden; missing [N/Fe]; noisy training labels | `spectra_train`, `spectra_test`, `labels`, `linelist` | minimum-norm P = 49 ≡ P = 13 (rank 13) [exact]; Lux abundances better than Cannon on validation [0.035 vs 0.046], T_eff at S/N 50–100 > 1.3× worse [67 vs 34 K]; ridge abundances better than Cannon [0.039]; hiding Mg I lines costs > 10% for all three [20–43%] but Lux without them beats Cannon with them [0.033 vs 0.040]; missing [N/Fe] for half: Lux all ≈ Lux half (< 10%) [0.063 both]; noisy labels (5σ): Cannon abundances > 1.5× worse [2.0×, 2.1×], Lux < 1.15× [1.08×, 0.94×], ridge worse than Lux |
 | A | `A_annieslasso` | Our Cannon against AnniesLasso 0.2.96 (Casey+16 code) on the same 1703 training / 1500 test stars: first run the same way (bug check), then each as designed (method difference); four workarounds needed (numpy 2, scipy 1.18) | `spectra_train`, `spectra_test` | same model: spectral models agree < 1e-3 σ [2e-6 σ]; labels 99th pct < 0.05 formal σ [0.021]; where they differ AnniesLasso has the higher χ² [2 stars, Δχ² 0 and 17.8]; as designed: AL scatter ≤ ours at every pixel [median ratio 0.44]; codes differ < 0.3× scatter about ASPCAP [10 K, 0.032, 0.008 vs 51 K, 0.121, 0.033]; ours closer to ASPCAP in all labels [AL 56 K, 0.126, 0.036]; θ weights matter more than s |
 | B | `B_pollux` | Lux and The Cannon with pollux 0.1.0 (pinned versions): data containers, training, test step; exact check of our least-squares blocks; label precision of both implementations | as Ch 11 | block solvers agree < 1e-6 of errors [~1e-9]; Cannon precisions within 8%, Lux within 20% |
+| C | `C_robustness` | Three training/validation splits; coefficient/scatter swaps, quality cuts, multi-start; training-only continuum selection; three missing/noisy-label draws with paired intervals, retuned ridge and underestimated Lux errors; per-label and metallicity-bin statistics; spectral prediction identifiability and label response | `spectra_train`, `spectra_test`, `labels` | split-10 full-minus-300 abundance scatter within 0.004 dex of 0.0114 dex; scatter swap at fixed 300-star coefficients changes it < 0.003 dex; smaller model worsens RMSE for ≥4 of 9 elements [5]; added noise increases Cannon median scatter > 0.03 dex, changes Lux < 0.02 dex; numerical label response agrees with the local formula |
 
 Findings that changed the plan during the build: float16 flux storage was unsafe (Ch 0 test failed; files rebuilt
 with float32 flux); one scatter per pixel is inflated by ~3% outlier training stars (Ch 4 cleaning step); a six-label
@@ -114,6 +115,7 @@ RV_FAIL, SUSPECT_ROTATION; `vscatter < 1 km/s`. Field samples: `extratarg = 0` (
 
 ```
 src/            notebook sources (percent format) and the shared blocks loader.py, norm.py, cannon.py, more.py,
+                lux.py, robustness.py,
                 pasted into notebooks at lines #@@LOADER etc.
 notebooks/      NN_<slug>.ipynb generated from src/ by scripts/py2nb.py, committed without outputs
 scripts/        build_data.py (WSDB + SDSS SAS → data files + manifest), zenodo_upload.py (instructor only),
@@ -129,6 +131,8 @@ _static/custom.css                page layout as in the sibling tutorials
 
 - `tests/test_cannon.py`: unit tests of the shared Cannon code on synthetic data (orders 1–3, L1 optimality
   conditions, censoring, multi-start, hull). `tests/test_sources.py`: every notebook equals its source in src/.
+- `tests/test_lux.py`: latent block solves, null spaces, masks, objectives and formal errors.
+  `tests/test_robustness.py`: paired bootstrap cancellation and recovery of a known scatter change.
 - `pytest tests/ --nbmake notebooks/` executes every notebook in a fresh kernel; notebooks contain explicit
   `assert` cells. `jupyter-book build . -W -n --keep-going` builds the site. Both run in CI; fixed random seeds.
 
@@ -162,8 +166,10 @@ Pinsonneault+25 (APOKASC-3) https://ui.adsabs.harvard.edu/abs/2025ApJS..276...69
 - APOKASC-3 (VizieR J/ApJS/276/69) was not reachable on 2026-10-30 (CDS down); Chapter 12 waits for it.
 - Smith et al. 2021 (DR16/17 line list) https://ui.adsabs.harvard.edu/abs/2021AJ....161..254S · Asplund et al. 2009 https://ui.adsabs.harvard.edu/abs/2009ARA&A..47..481A · Morton 2000 https://ui.adsabs.harvard.edu/abs/2000ApJS..130..403M · Recio-Blanco et al. 2023 (GSP-Spec) https://ui.adsabs.harvard.edu/abs/2023A&A...674A..29R: checked in ADS.
 - The second, positive-offset group of faint-star RVS spectra (Ch 9): origin in the Gaia processing not traced.
-- Ch 10: validation-star abundances are better from 300 training stars than from 1308 (both subsets; not seen on the
-  S/N 50–100 test stars). Not traced. Tests to run (partly from the Codex review of 2026-10-31): swap theta and s
-  between the 300- and 1308-star models; apply ASPCAP quality flags for all nine elements (build_data cuts only C, N,
-  Mg); remove influential training stars (`train_clean`); repeat with nested subsets, several validation splits and
-  per-element bias/MAD/RMSE with intervals; check multi-start effects.
+- Ch 10 training-size effect: Appendix C runs three splits with nested 300-star subsets, training-only continuum
+  selection, coefficient/scatter swaps, all-nine-element flags, residual cuts, multi-start fits and paired intervals.
+  On split 10 the smaller model has tighter robust scatter but worse RMSE for five of nine abundances. The effect
+  follows the coefficients rather than mainly test-time scatter weights; quality/residual cuts and extra starts
+  do not remove it. The other splits have smaller differences with intervals crossing zero. Thus a universal
+  advantage for 300 stars is not established. The physical origin of the changed residual distributions remains
+  unresolved; the diagnostic work is in Appendix C rather than pending.

@@ -7,10 +7,15 @@ Status: v2 (2026-10-31), revised after a Codex review of v1. **Implemented 2026-
 - The reference comparison (§5) was done against *pollux* 0.1.0 (A. Price-Whelan), which implements Lux with exact
   block solves, instead of against H25's 2025 scripts: block solvers agree to ~1e-9 of the errors (Appendix B).
 - H25's code gained an MIT licence and the stage-2 fix (db9d2ae) on 2026-11-01, after we reported it.
-- Not done (open, from the Codex review of 2026-11-01): repeated random draws with paired bootstrap intervals for
-  E3/E4; per-label bias/RMSE and [Fe/H]-bin tables; spectral prediction and label-response checks of E1; ridge
-  baseline for E3; ridge re-tuned on noisy labels and Lux told underestimated errors in E4; continuum pixels chosen
-  within the training split only.
+- The remaining validation work is implemented in Appendix C (2026-11-02): three missing/noisy-label draws with
+  paired bootstrap intervals; per-label bias/RMSE and metallicity-bin tables; a ridge baseline using each available
+  label; ridge retuned for noisy labels; underestimated Lux errors; and training-only continuum selection.
+  Continuum selection is held fixed during perturbations to isolate label fitting, so this is not an end-to-end
+  noisy-catalogue simulation. The label-response check includes a finite difference. The spectral-prediction
+  experiment exposes a limitation of E1: labels alone do not fix 49 latents. A minimum-norm prediction and an
+  explicit label-null direction demonstrate why a unique Lux prediction requires an additional prior/convention.
+  The noisy-label result survives the repetitions; the missing-label experiments show no consistent nitrogen gain.
+  Intervals are conditional on fitted models, and three draws do not establish population-wide robustness.
 
 ## 1. Goal
 

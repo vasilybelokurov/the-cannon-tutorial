@@ -6,7 +6,8 @@ spectra, following the papers of Ness and collaborators. Students write the mode
 
 **Read online:** https://vasilybelokurov.github.io/the-cannon-tutorial/
 
-Status: in development. Chapters 0–9 are built (release v0.1); the plan, including later chapters, is in
+Chapters 0–11 and Appendices A–C are implemented. Appendix C checks the stability of the training-size and Lux
+comparisons with repeated splits and perturbations. The plan, including later chapters, is in
 [STRUCTURE.md](STRUCTURE.md).
 
 ## Run in the browser
@@ -21,9 +22,15 @@ changed selection gets a new file name in a new version of the record, so a publ
 
 ```bash
 pip install -r requirements.txt jupyter pytest nbmake
-pytest tests/ --nbmake notebooks/
+pytest tests/ --nbmake notebooks/ --nbmake-timeout=3600
 jupyter lab notebooks/
 ```
+
+To build the website, also install `jupyter-book==1.0.4.post1`. Execute the notebooks with
+`pytest tests/ --nbmake notebooks/ --nbmake-timeout=3600 --overwrite`, then run
+`jupyter-book build . -W -n --keep-going`. Regenerate notebooks from `src/` before committing so committed
+notebooks contain no outputs. Appendix B installs the pinned pollux/JAX stack; Appendix C runs several dozen fits and takes longer
+than the introductory chapters.
 
 ## Data
 

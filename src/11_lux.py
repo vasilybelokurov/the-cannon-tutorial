@@ -37,6 +37,10 @@
 #
 # One detail of H25's published code (its last step used the previous $B$ and scatter) differed from the paper; the
 # author fixed it on 2026-11-01 after we reported it. We follow the paper.
+#
+# **Scope of these examples.** This chapter uses one split and one missing/noisy-label draw to introduce the
+# method. Appendix C repeats those experiments with training-only continuum selection, three random draws,
+# paired bootstrap intervals, per-label bias/RMSE tables, retuned ridge and underestimated Lux errors.
 
 # %%
 #@@LOADER
@@ -312,7 +316,10 @@ plt.show()
 # less; Lux, which treats them as outputs with known errors and passes them through a low-dimensional latent space,
 # hardly at all — which of these features matters most, this comparison cannot say. This is the clearest advantage of
 # Lux on our data. Caveats: one noise draw; Lux was told the true total errors; ridge's strength was chosen on the
-# clean labels and not re-tuned.
+# clean labels and not re-tuned. Appendix C tests each of these limitations explicitly.
+# With three new draws it confirms the large Cannon degradation and much smaller Lux changes, including when
+# Lux is told underestimated errors. Thus accurate label uncertainties alone do not explain the robustness.
+# Read the robustness claim here as a comparison with The Cannon; Appendix C supplies the retuned ridge control.
 #
 # **Checks.**
 

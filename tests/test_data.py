@@ -2,6 +2,7 @@
 
 Run: pytest tests/test_data.py
 """
+import ast
 import json
 from pathlib import Path
 
@@ -20,6 +21,13 @@ def test_files_used_by_notebooks_are_in_manifest():
     used = set()
     for p in nb.glob("*.ipynb"):
         for cell in json.loads(p.read_text())["cells"]:
+            if cell['cell_type'] != 'code':
+                continue
             src = "".join(cell["source"])
-            used |= {s.split("'")[1] for s in src.split("load(")[1:] if s.startswith("'")}
+            # Inspect Python expressions: load('spectra_' + sample) is not a literal file name.
+            for node in ast.walk(ast.parse(src)):
+                if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'load'
+                        and node.args and isinstance(node.args[0], ast.Constant)
+                        and isinstance(node.args[0].value, str)):
+                    used.add(node.args[0].value)
     assert used and used <= set(MANIFEST), used - set(MANIFEST)

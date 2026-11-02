@@ -15,3 +15,4 @@ chapters:
   - file: notebooks/11_lux
   - file: notebooks/A_annieslasso
   - file: notebooks/B_pollux
+  - file: notebooks/C_robustness

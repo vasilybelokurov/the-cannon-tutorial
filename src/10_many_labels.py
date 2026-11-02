@@ -237,9 +237,12 @@ plt.show()
 # help a little). C16 used regularisation for a 17-label model (171 coefficients per pixel); it matters when the
 # training set is small for the number of labels.
 #
-# One feature of this figure we have not explained: the abundances of the validation stars come out *better* from
-# 300 training stars than from all 1308, for both random subsets and without regularisation. It is listed, with
-# tests to run, as an open question in `STRUCTURE.md`.
+# The abundances of the validation stars come out *better* from 300 training stars than from all 1308, for both
+# random subsets and without regularisation. Appendix C investigates this with three splits, training-only
+# continuum selection, exchanged coefficients/scatter, quality cuts and several test-step starting points.
+# It finds that the original split's narrower central distribution does not mean uniformly smaller errors:
+# the 300-star model has worse RMSE for five of nine abundances. The effect follows the learned coefficients
+# more than the test-time scatter weights, and the other splits have smaller, less decisive differences.
 #
 # **Checks.**
 
